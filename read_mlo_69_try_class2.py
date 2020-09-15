@@ -1721,7 +1721,7 @@ class MolTools():
     def write_fake_mol(self,mol_name,mol_encode_str,order_dir_name):
     
         
-        atoms_type,_,_,bands_type =  str2nets(mol_encode_str,order_dir_name)
+        atoms_type,_,_,bands_type =  self.str2nets(mol_encode_str,order_dir_name)
         if atoms_type=="IndexError":
             return "IndexError"
     
