@@ -536,7 +536,7 @@ class MolNets():
     
     #Layers_net
     
-    def net2matrix(self,file_name,root=1,size=[20,12,12,5]):
+    def net2matrix(self,file_name,root=1,size=[20,15,15,5]):
         
     
         atom_type,pos ,band = self.atom_type,self.pos ,self.band   #获得分子mol文件属性
@@ -1139,6 +1139,28 @@ class MolNets():
     print("-----------------------------------------")##############################################################################
     
    
+
+    
+
+class MolTools():
+
+
+
+    def branch(self,band,core):    #找到某个原子周围相键连的所有原子，core中心原子
+        bud = []
+        for line in band:
+        
+            #print(line[1],line[2])
+            
+            if core in (int(line[1]),int(line[2])):
+                #print(line[1:3])
+                bud.append(int(line[1]))
+                bud.append(int(line[2]))
+    
+        while bud.count(core)>0:
+            bud.remove(core)
+        #print(bud)
+        return bud
     ###############
     #file_name = "088602.mol"
     def get_valence(self,lines):
@@ -1153,7 +1175,9 @@ class MolNets():
     
         
         info = lines_info_list
+        print("info",info)
         atom_type,pos ,band  = get_mol_info([info,"mol"])
+        print("band",band)
     
         atoms_num = len(pos)
     
@@ -1184,13 +1208,14 @@ class MolNets():
                     band_name = str(j)+"-"+str(i)
                 
                 atom_valence+=int(band_type_dir[band_name])
-                #print(band_type_dir[band_name],end = " ")
+                print('----------------',band_type_dir[band_name],end = " ")
             #print(atom_valence)
             atom_valence_list.append(  [str(i) , [atom_type[str(i)][0],atom_valence]]  )
                                             
         #for i in band :
             
             #print(i)
+        print("atom_valence_list",atom_valence_list)
         return atom_valence_list
     
     
@@ -1199,19 +1224,15 @@ class MolNets():
     
     
     def have_right_atom_valence(self,lines):
-        atom_valence_list = get_valence(lines)    
+        atom_valence_list = self.get_valence(lines)    
         for i in atom_valence_list:
-            #print(i[1][0],i[1][1])
+        
+            print('-->',i,i[1][0],i[1][1])
             if i[1][1] not in ATOM_valence[i[1][0]]:
                 return False
         return True
     #print(have_right_atom_valence(file_name))      
     #input()
-    
-
-class MolTools():
-
-
  
     ###############
     ##########    
@@ -1289,17 +1310,19 @@ class MolTools():
     
     def mol_to_sequence(self,file_name,nets_dir_name,root=0):
         sequence=[]
+        Net  = MolNets(file_name)
         if root==0:
-            Net  = MolNets(file_name)
+            
             root=Net.min_x_size_root(file_name)
         L,w_num = Net.mol2net(file_name,root)[:2]
     
-        if w_num<=12:
-            mol =Net.net2matrix(file_name ,root,[len(L)+1,12,12,3])[0]
+        if w_num<=15:
+            mol =Net.net2matrix(file_name ,root,[len(L)+1,15,15,3])[0]
             #mol = np.load(to_files_name+file)
             with  open(nets_dir_name,"rb") as f:
                 s =pickle.load(f)
             for i in mol :
+
                 if str(i) in s.keys():
                     sequence.append(s[str(i)][1])
                     #if s[str(i)][1] >8282:
@@ -1431,7 +1454,7 @@ class MolTools():
                     root=Net.min_x_size_root(folder+file_name)
                     print( file_name,root)
                     cont+=1
-                    TXT.writelines(  str(x)+" " for x in    mol_to_sequence(folder+file_name,nets_dir_name,root)  )
+                    TXT.writelines(  str(x)+" " for x in    self.mol_to_sequence(folder+file_name,nets_dir_name,root)  )
                     TXT.writelines("    "+file_name+"\n")
     
     #key为矩阵的字典转化成key为数序的字典
@@ -1459,7 +1482,7 @@ class MolTools():
     ##########################################################################################################
     #矩阵转化为二分图
     def matrix2layer(self,M):  #(13, 12, 12, 3)
-        M=M.reshape(1,12,12,3)
+        M=M.reshape(1,15,15,3)
         node_cont=0
         NETs = []
         LAYERs = []
@@ -1486,7 +1509,7 @@ class MolTools():
             #print(len(layer))            
             NETs.append(net)
      
-    
+            
             l1= list(set(list(zip(*net))[0]))
             l2= list(set(list(zip(*net))[1]))
             l1.sort(key = lambda x:x[0])
@@ -1512,6 +1535,7 @@ class MolTools():
             order_dir = pickle.load(f)
     
             #print(order_dir[int(mol_str)].shape)
+            print(mol_str)
             return order_dir[int(mol_str)]
             
     #nets_dir_name = "nets_info_dir_NPname_3000.plk"
@@ -1653,17 +1677,17 @@ class MolTools():
         layers=[[1]]
         
         
-        mol_str_list = mol_str.split(" ")
-        m=txt2matrix(mol_str_list[0],order_dir_name)
+        mol_str_list = mol_str_list = mol_str.split(" ")
+        m=self.txt2matrix(mol_str_list[0],order_dir_name)
         
         #得到所有原子序数及对应的原子类型字典atom_type，得到每一层的原子layers
-        atom_type["1"]= (self.matrix2layer(m.reshape((1, 12, 12, 3)))[1][0][0][1],)  #初始原子为C
+        atom_type["1"]= (self.matrix2layer(m.reshape((1, 15, 15, 3)))[1][0][0][1],)  #初始原子为C
         #print(self.matrix2layer(m.reshape((1, 12, 12, 2)))[1][0][0][1])
         atom_order = 2
         for i in mol_str_list:
-            m=txt2matrix(i,order_dir_name)
+            m=self.txt2matrix(i,order_dir_name)
             layer=[]
-            for j in self.matrix2layer(m.reshape((1, 12, 12, 3)))[1][1]:
+            for j in self.matrix2layer(m.reshape((1, 15, 15, 3)))[1][1]:
     
                 atom_type[str(atom_order)]=(j[1],)
                 
@@ -1687,12 +1711,12 @@ class MolTools():
         #print("---------------------------")   
         nets=[] 
         for m_, i in enumerate(mol_str.split(" ")):
-            m=txt2matrix(i,order_dir_name)
+            m=self.txt2matrix(i,order_dir_name)
             #print(self.matrix2layer(m.reshape((1, 12, 12, 2)))[0])
             #print(m_)
-            layer_bannd_type_dir =self.matrix2layer(m.reshape((1, 12, 12, 3)))[2]
+            layer_bannd_type_dir =self.matrix2layer(m.reshape((1, 15, 15, 3)))[2]
      
-            for n_, j in enumerate(self.matrix2layer(m.reshape((1, 12, 12, 3)))[0]):
+            for n_, j in enumerate(self.matrix2layer(m.reshape((1, 15, 15, 3)))[0]):
                 #print(j)
                 
                 net=[]
@@ -1703,6 +1727,7 @@ class MolTools():
                         Layers_band_type_dir [ str(layers[m_][k[0][0]])+"-"+str(layers[m_+1][ k[1][0] ])   ]= layer_bannd_type_dir[   str(k[0][0])+"-"+str( k[1][0])    ]
                     except IndexError:
                         print("next mol")
+                        print("IndexError")
                         return  "IndexError","IndexError","IndexError","IndexError"
                             
                     
@@ -1714,7 +1739,7 @@ class MolTools():
             
         #print("nets",nets)
         if show ==True:
-            str_plot_nets(atom_type,layers,nets,Layers_band_type_dir)  #layers是b ，nets是nodes
+            self.str_plot_nets(atom_type,layers,nets,Layers_band_type_dir)  #layers是b ，nets是nodes
         return atom_type,layers,nets,Layers_band_type_dir 
     
     
@@ -1723,6 +1748,7 @@ class MolTools():
         
         atoms_type,_,_,bands_type =  self.str2nets(mol_encode_str,order_dir_name)
         if atoms_type=="IndexError":
+            print("IndexError")
             return "IndexError"
     
         atoms_type_new = atoms_type.copy()
@@ -1756,6 +1782,7 @@ class MolTools():
                     try:
                         bands_type_new.pop(key)
                     except KeyError:
+                        print("KeyError")
                         return "KeyError"
                     new_band.append(key.split("-")[0])
                     if item=="11":
@@ -1866,8 +1893,11 @@ class MolTools():
         lines.append("M  END\n")
     
     
+
+        with open(mol_name+"_fake.mol","w") as mol_txt:
+            mol_txt.writelines(lines)
     
-        if have_right_atom_valence(lines):   
+        if self.have_right_atom_valence(lines):   
     
             with open(mol_name+"_fake.mol","w") as mol_txt:
                 mol_txt.writelines(lines)
@@ -1875,7 +1905,8 @@ class MolTools():
             return lines
         else:
             #with open(mol_name+"_fake.mol","w") as mol_txt:
-                #mol_txt.writelines(lines)        
+                #mol_txt.writelines(lines)
+            print("valenceError")
             return "valenceError"
             
     
@@ -1888,8 +1919,8 @@ class MolTools():
 
 if __name__=="__main__":
 
-    #nets_dir_name = "nets_info_dir_NPname_3000.plk"
-    #order_dir_name = "order_info_dir_NPname_3000.plk"
+    nets_dir_name = "nets_info_dir_NPname_3000.plk" #encode编码
+    order_dir_name = "order_info_dir_NPname_3000.plk" #decode解码
 
 
     #folder = "mols/"
@@ -1954,27 +1985,25 @@ if __name__=="__main__":
 
 
 
-    file_name= "mols/000017.mol"
-    Net  = MolNets(file_name)
-    #print(self.min_x_size_roots(file_name))
-    root=Net.min_x_size_root(file_name)
-    print(root)
-    L = Net.mol2net(file_name,root)[0]
-    print(Net.mol2net(file_name,root)[1:])
-    M=Net.net2matrix(file_name,root,size=[len(L),12,12,3])[0]
-    print(M.shape)
-    Net.plot_nets(file_name,root,[len(L)+1,12,12,3],False,False)
-    Net.plot_matrix(file_name,root,[len(L),12,12,3]  )
+    #file_name= "mol_zinc_150000/00017.mol"
+    #Net  = MolNets(file_name)
+    #root=Net.min_x_size_root(file_name)
+    #print(root)
+    #L = Net.mol2net(file_name,root)[0]
+    #print(Net.mol2net(file_name,root)[1:])
+    #M=Net.net2matrix(file_name,root,size=[len(L),12,12,3])[0]
+    #print(M.shape)
+    #Net.plot_nets(file_name,root,[len(L)+1,12,12,3],False,False)
+    #Net.plot_matrix(file_name,root,[len(L),12,12,3]  )
 
 
 
 
-
-
+    folder = "mol_zinc_150000/"
     moltools = MolTools()
     nets_dir_name = "nets_info_dir_NPname_3000.plk"
     order_dir_name = "order_info_dir_NPname_3000.plk"
-    folder = "mols/"
+    folder = "mol_zinc_150000/"
     dir_save_name="nets_info_dir_NPname_3000.plk"
     moltools.mol_to_nets_dir(folder,dir_save_name,key_is_order=False)
     moltools.write_txt("ZINC250K.txt",folder,"nets_info_dir_NPname_3000.plk")
@@ -1985,9 +2014,34 @@ if __name__=="__main__":
 
 
 
+    input("finish")
     input()
     input()
-    input()
+
+
+
+
+
+    folder = "mol_zinc_150000/"
+    moltools = MolTools()
+    for file_name in os.listdir(folder):
+        Net  = MolNets(folder+file_name)
+        root=Net.min_x_size_root(folder+file_name)
+        mol_encode = moltools.mol_to_sequence(folder+file_name ,nets_dir_name,root)
+        print(mol_encode)
+        mol_str = " ".join([str(x) for x in mol_encode[:-1]])
+        print("yes1")
+        moltools.str2nets(mol_str,order_dir_name,show=True)
+        print("yes2")
+        print(file_name)
+        moltools.write_fake_mol(file_name,mol_str,order_dir_name) #encode
+        print("yes3")
+        input()
+        
+
+
+
+
 #net_dir2order_dir(nets_dir_name,order_dir_name)
 ######################################################################################################
 #    print("Finish")
