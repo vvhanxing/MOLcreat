@@ -246,16 +246,6 @@ def getLineElement(file_name):     #找到文件每行元素输出为二维列�
 
 
 
-
-
-
-
-
-
-
-
-
-
 def get_mol_info(info):     #将输入的二维文本列表转化为原子类型，原子坐标，键连关系
 
     Lines,mode = info[0],info[1]
@@ -540,23 +530,6 @@ class MolNets():
 
     
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
 
     
 
@@ -846,309 +819,6 @@ class MolNets():
 
 
 
-
-
-
-
-    
-
-    def mol2net__(self,file_name,root):
-
-        atom_type,pos,band = self.atom_type,self.pos ,self.band 
-
-        #print(atom_type,pos,band)
-
-        all_atom_num = len(pos)
-
-        #print("all_atom_num",all_atom_num )
-
-        #band = self.atom_type,self.pos ,self.band [2]       
-
-    
-
-        nodes,sides = self.get_nodes_sides(len(pos),band)  #得到所有的点和边
-
-        G = Gragh(nodes,sides)                        
-
-        ##print()
-
-        ##print()
-
-        ##print ("DFS",G.DFS(root))
-
-        ##print()
-
-        ##print ("BFS",G.BFS(root))
-
-    
-
-        NODES = G.BFS(root)               #输出为遍历的点序列
-
-        #print(">>",NODES)
-
-        NODES.pop(0)
-
-        NODES.append(0)
-
-        #print("NODES",NODES)
-
-        
-
-        L=[]
-
-        L.append([root])
-
-        l=[]
-
-        L_last=0
-
-    
-
-        ######
-
-        placeholder_dir ={}
-
-        ######
-
-        #L_next=0
-
-        placeholder_count =0
-
-                        
-
-        for count , node in enumerate(NODES):
-
-    
-
-            
-
-            L_last_branch=[]  #获得上一层节点产生的所有分支节点    L_last负责计层数
-
-            for i in L[L_last]:
-
-                L_last_branch.extend(self.branch(band,i))
-
-                #print("#",L_last_branch)
-
-            if L_last>0:  #从第二层开始删除L_last_branch上上层的节点，这是由于branch（）不分方向
-
-                
-
-                for i in L[L_last-1]:
-
-                    if i in L_last_branch:
-
-                        L_last_branch.remove(i)
-
-                
-
-            
-
-            
-
-            if node not in L_last_branch:  #node 如果不在上一层的下一分支中，则该node不属于该层
-
-                L_last += 1
-
-                L.append(l)
-
-                #print(">l",l)
-
-                l=[node]    #node作为新一层的开始
-
-                #break
-
-            else :
-
-                l.append(node)  #node 在上一层产生的分支节点当中，说明这一层还没结束
-
-                #print("--l",l)
-
-               
-
-                
-
-                #print("l",l)
-
-                #检查同层成键  在不断追加node 时，我们需要看看新追加到该层的原子有没有内部相连
-
-                
-
-                for m in l:
-
-                    for n in self.branch(band,m):
-
-                        if node ==n:
-
-                            #print("yes,get it!",L_last,"     ",node,m)
-
-                            all_atom_num += 1
-
-                            new_holder = all_atom_num
-
-                            placeholder_count+=1
-
-                            #print("placeholder_count---------------",placeholder_count)
-
-                            placeholder_dir[str(L_last+1)+"-"+str(placeholder_count)] = [[node,new_holder],[m,new_holder]]  #创建字典保存新的placeholder键连关系
-
-    
-
-                        
-
-                    
-
-                    
-
-    
-
-            #print( ">L:",L[L_last],"last---------------------->",L_last)
-
-        # L为每一层元素，原始顺序
-
-        
-
-    
-
-        Layer = L  #删除i_重复
-
-    
-
-    
-
-        #if show==True:
-
-            #for i in Layer :
-
-            
-
-                #print(">>>Layer",i)
-
-    
-
-        Layer.append([])
-
-        
-
-    
-
-        Layer_long = len(Layer)
-
-    
-
-        Layers_net = []
-
-    
-
-        for i in range(Layer_long):
-
-    
-
-            Layer_net = []
-
-        
-
-            for j in Layer[i]:
-
-                for k in Layer[i+1]:
-
-                    if k in self.branch(band,j):
-
-                        Layer_net.append([j,k])
-
-    
-
-            Layers_net.append(Layer_net)
-
-    
-
-    
-
-        for i in range(Layers_net.count([])):         
-
-            if [] in Layers_net:
-
-                Layers_net.remove([])
-
-    
-
-    
-
-    #################################不记placeholder的边宽与图长
-
-        x_size = []
-
-        for i in Layers_net:
-
-            #print(i)
-
-            x_size.append(len(i))
-
-        Layers_long=len(Layers_net)
-
-    
-
-    
-
-        
-
-            
-
-        ########增加placeholder键连关系
-
-                
-
-        for key,item in placeholder_dir.items():
-
-            for i in item:
-
-    
-
-                
-
-                
-
-                #print(int(key.split("-")[0]),Layers_long)
-
-                
-
-                if int(key.split("-")[0])>=Layers_long:  #如果placeholder在最后一层
-
-                    Layers_long+=1
-
-                    Layers_net.append([])
-
-                
-
-    
-
-                
-
-                Layers_net[int(key.split("-")[0])].append(i)
-
-        #####################################
-
-        
-
-    
-
-    
-
-        #print("Layers_net",Layers_net)
-
-        
-
-        #print("placeholder_dir",placeholder_dir)
-
-        #input("-------------##")
-
-        #print(Layers_net,x_size)
-
-                
-
-        return  Layers_net , max(x_size) ,Layers_long,placeholder_dir
-
-    
 
     ##############################################################################################33
 
@@ -1749,7 +1419,7 @@ class MolNets():
 
             
 
-            if item[0][0]< item[1][0]:
+            if int(item[0][0])< int(item[1][0]):
 
                     band_name = str(item[0][0]) +"-"+ str(item[1][0])
 
@@ -1764,7 +1434,7 @@ class MolNets():
                                     
 
     
-
+            print(band_name)
             if band_type_dir [ band_name  ]=="1":
 
                 #print("item ",item )
@@ -2572,7 +2242,7 @@ class MolTools():
 
                 atom_valence+=int(band_type_dir[band_name])
 
-                print('----------------',band_type_dir[band_name],end = " ")
+                #print('----------------',band_type_dir[band_name],end = " ")
 
             #print(atom_valence)
 
@@ -2610,7 +2280,7 @@ class MolTools():
 
         
 
-            print('-->',i,i[1][0],i[1][1])
+            #print('-->',i,i[1][0],i[1][1])
 
             if i[1][1] not in ATOM_valence[i[1][0]]:
 
@@ -3226,7 +2896,7 @@ class MolTools():
 
             #print(order_dir[int(mol_str)].shape)
 
-            print(mol_str)
+            #print(mol_str)
 
             return order_dir[int(mol_str)]
 
@@ -3932,7 +3602,7 @@ class MolTools():
 
                 
 
-            lines.append(a+b+"  "+i[1]+"  0  0  0  0\n")
+            lines.append(a+b+"  "+i[1]+"  0\n")
 
             
 
@@ -4126,7 +3796,7 @@ if __name__=="__main__":
 
 
 
-    file_name= "mols/000007.mol"
+    file_name= "mols/000001.mol"
 
     Net  = MolNets(file_name)
 
