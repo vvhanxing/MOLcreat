@@ -1077,7 +1077,7 @@ class MolNets():
 
                 order_1 =  [ b[cont].index(last_link_node) for last_link_node in last_link_nodes ]  #按照与上层连接的顶点次序对该顶点设定等级，连接多个顶点就取平均
 
-                order_2 =  [ atom_type[next_link_node][1] for next_link_node in next_link_nodes if next_link_node!="0"]  #按照与上层连接的顶点次序对该顶点设定等级，连接多个顶点就取平均
+                order_2 =  [ 3**(atom_type[next_link_node][1]*10) for next_link_node in next_link_nodes if next_link_node!="0"]  #按照与上层连接的顶点次序对该顶点设定等级，连接多个顶点就取平均
                 #print(order_2)
 
                     #print(y_elem[0],'-',order ,end=" ")
@@ -3424,8 +3424,9 @@ class MolTools():
     
 
         
+        #print(mol_encode_str)
 
-        lines = [mol_encode_str+"\n",
+        lines = ["-".join(mol_encode_str.split(" "))+"\n",
 
                  "fake_mol\n","\n",
 
@@ -3669,40 +3670,47 @@ if __name__=="__main__":
 
 
 
-    folder = "mols/"
+    #folder = "mol_zinc_150000/"
 
-    files_list = os.listdir(folder)
+    #files_list = os.listdir(folder)
 
-    files_list.sort(key=lambda x:int(x[:-4]))
+    #files_list.sort(key=lambda x:int(x[:-4]))
 
-    files_list = [folder+x for x in files_list if ".mol" in x]
+    #files_list = [folder+x for x in files_list if ".mol" in x][:20]
     
 
-    for file_name in files_list:
+    #for file_name in files_list:
         
 
-        Net  = MolNets(file_name)
+        #Net  = MolNets(file_name)
 
-        root=Net.min_x_size_root(file_name)
+        #root=Net.min_x_size_root(file_name)
 
-        print(root)
+        #print(root)
 
-        L = Net.mol2net(file_name,root)[0]
+        #L = Net.mol2net(file_name,root)[0]
 
-        print(Net.mol2net(file_name,root)[1:])
+        #print(Net.mol2net(file_name,root)[1:])
 
-        M=Net.net2matrix(file_name,root,size=[len(L),15,15,3])[0]
+        #M=Net.net2matrix(file_name,root,size=[len(L),15,15,3])[0]
 
-        print(M.shape)
+        #print(M.shape)
 
-        Net.plot_nets(file_name,root,[len(L)+1,15,15,3],False,False)
+        #Net.plot_nets(file_name,root,[len(L)+1,15,15,3],False,False)
 
         #Net.plot_matrix(file_name,root,[len(L),15,15,3]  )
 
 
 
-    input()
-    input()
+    #input()
+    #input()
+    #file_name = "mol_zinc_150000/00011.mol"
+    #Net  = MolNets(file_name)
+    #root=Net.min_x_size_root(file_name)
+    #L = Net.mol2net(file_name,root)[0]
+    #M=Net.net2matrix(file_name,root,size=[len(L),15,15,3])[0]
+    #Net.plot_nets(file_name,root,[len(L)+1,15,15,3],False,False)
+    #input()
 
     
 
@@ -3714,7 +3722,7 @@ if __name__=="__main__":
 
     dir_save_name="nets_info_dir_NPname_3000.plk"
 
-    folder = "mols/"
+    folder = "mol_zinc_150000/"
 
     files_list = os.listdir(folder)
 
@@ -3732,17 +3740,22 @@ if __name__=="__main__":
 
 
 
-
+    input("print")
 
 
 
     #encode
+    folder = "mol_zinc_150000/"
 
-    folder = "mols/"
+    files_list = os.listdir(folder)
+
+    files_list.sort(key=lambda x:int(x[:-4]))
+
+    files_list = [x for x in files_list if ".mol" in x]   
 
     moltools = MolTools()
 
-    for file_name in os.listdir(folder):
+    for file_name in files_list:
 
         Net  = MolNets(folder+file_name)
 
