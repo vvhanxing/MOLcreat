@@ -2410,12 +2410,13 @@ class MolTools():
     #b= np.load( folder+"1..matrix.npy" )
 
         nets_str = []
+        nets_list = []
 
         nets_dir = {}
 
         count = 0
 
-        for   file_name in files_list:
+        for file_name in files_list:
 
             #nets = np.load(folder + i )
 
@@ -2425,11 +2426,6 @@ class MolTools():
 
             if len(Net.get_C_list(file_name)) >0:
 
-    
-
-                
-
-                
 
                 root=Net.min_x_size_root(file_name)
 
@@ -2453,23 +2449,23 @@ class MolTools():
 
                     nets =Net.net2matrix(file_name ,root,[len(L)+1,15,15,3])[0]
 
-                    for net in nets:
+                    nets_str .extend(list(map( lambda x:str(x),nets )))
+                    nets_list.extend( list(nets) )
 
-                        nets_str .append(str(net))
+                    
+  
+                    
 
-                        #print(str(net))
 
-                        nets_dir [str(net)] = net
 
-    
+        nets_dir = dict( list(zip( nets_str,nets_list  )) )
+        
 
-                
-
+        
+        #print(len(nets_dir.keys()))
+        #input(nets_dir[nets_str[1]])
+        
         c = Counter(nets_str)
-
-    
-
-    
 
         count =0
 
@@ -2521,7 +2517,7 @@ class MolTools():
 
             if key_is_order==False:
 
-                nets_info_dir[i[0] ]=[ nets_dir[i[0]],count ,i[1]]   #{ 矩阵名字：[矩阵，排序，出现次数] }
+                nets_info_dir[i[0] ]=[ nets_dir[i[0]],count ,i[1]]   #{ 矩阵名字：[矩阵，排序，出现次数] } #编码
 
             if key_is_order==True:
 
@@ -3728,7 +3724,7 @@ if __name__=="__main__":
 
     files_list.sort(key=lambda x:int(x[:-4]))
 
-    files_list = [folder+x for x in files_list if ".mol" in x]
+    files_list = [folder+x for x in files_list if ".mol" in x][:20]
 
     moltools.mol_to_nets_dir(files_list,dir_save_name,key_is_order=False)
 
@@ -3751,7 +3747,7 @@ if __name__=="__main__":
 
     files_list.sort(key=lambda x:int(x[:-4]))
 
-    files_list = [x for x in files_list if ".mol" in x]   
+    files_list = [x for x in files_list if ".mol" in x] [:20]  
 
     moltools = MolTools()
 
