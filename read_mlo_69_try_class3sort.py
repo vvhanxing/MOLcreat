@@ -1,3 +1,10 @@
+
+###################
+#                 #
+# 6.6生成错误处理 #
+#                 #
+###################
+
 import os
 
 import time
@@ -5,6 +12,8 @@ import time
 import re
 
 from collections import Counter
+
+from copy import deepcopy
 
 import pickle
 
@@ -16,29 +25,9 @@ import matplotlib.pyplot as plt
 
 from matplotlib import colors
 
-#from PIL import Image
-
 from collections import OrderedDict
 
-
-
-from copy import deepcopy
-
 #from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-###############
-
-#6.6生成错误处理#
-
-###############
-
-
-
-###############
-
-#
-
-###############
 
 
 
@@ -66,19 +55,15 @@ BANDencode = OrderedDict( [
 
 
 
-
-
-
-
 ATOM_type_list =[
 
     (0.11,"h1"),    #数值大小也决定它在同层中的位置
 
-    (0.12,"h2"),    #数值大小也决定它在同层中的位置
+    (0.12,"h2"),    
 
-    (0.13,"h3"),    #数值大小也决定它在同层中的位置
+    (0.13,"h3"),    
 
-    (0.14,"h4"),    #数值大小也决定它在同层中的位置
+    (0.14,"h4"),   
 
     (0.1,"H"),
 
@@ -169,9 +154,6 @@ ATOMdecode = OrderedDict(ATOM_type_list)
 BANDdecode = OrderedDict(
 
 
-
-
-
     [(0.0,"0"),
 
      (0.3,"1"),
@@ -205,11 +187,6 @@ BANDdecode = OrderedDict(
 
 
 ###############
-
-
-
-
-
 
 
 def getLineElement(file_name):     #找到文件每行元素输出为二维列表
@@ -633,18 +610,10 @@ class MolNets():
 
             #################
 
-            
-
             ########### sort layer vertex by order,avoid edge intersection
 
 
-
-
-
             #################
-
-
-
 
 
 
@@ -672,11 +641,6 @@ class MolNets():
         #print("L",L)
 
        
-
-
-
-    
-
 
 
         nets = []
@@ -720,13 +684,6 @@ class MolNets():
         #return  Layers_net , max(x_size) ,Layers_long,placeholder_dir
 
     
-
-
-
-
-
-
-
 
 
 
@@ -3171,13 +3128,17 @@ class MolTools():
 
                 #print("---------------")
 
-            
-
         #print("nets",nets)
 
         if show ==True:
 
             self.str_plot_nets(atom_type,layers,nets,Layers_band_type_dir)  #layers是b ，nets是nodes
+        print("---------------------")
+        print("atom_type",atom_type )
+        #print("layers",layers )
+        #print("nets",nets )
+        print("Layers_band_type_dir ",Layers_band_type_dir )
+        print("---------------------")
 
         return atom_type,layers,nets,Layers_band_type_dir 
 
@@ -3187,219 +3148,95 @@ class MolTools():
 
     def write_fake_mol(self,mol_name,mol_encode_str,order_dir_name):
 
-    
-
-        
-
+        """
+        分子文件创建
+        """
         atoms_type,_,_,bands_type =  self.str2nets(mol_encode_str,order_dir_name)
+
 
         if atoms_type=="IndexError":
 
             print("IndexError")
-
+    
             return "IndexError"
 
-    
+
+        print("去除冗余占位信息")#去除冗余占位信息
 
         atoms_type_new = atoms_type.copy()
-
         bands_type_new = bands_type.copy()
+        remove_hodels = []
+        hodels_link=[]
+        replace_index_atoms = []
+        all_atoms_num = len(atoms_type_new)
+        for key ,value in atoms_type_new.items():
+            hodel_link = []
+            if value[0][0] =="h":
+                #
+                remove_hodels.append(key)
+                for link in list(bands_type_new.keys()):
+                    h_a  = link.split("-")
+                    if key in h_a:
+                        
+                        h_a.remove(key)
+                        hodel_link.append([key,h_a,bands_type_new[link]]) #占位点，与谁相连，代替什么键
+                        print("",bands_type_new[link],link )
+                        del bands_type_new[link] #取代占位符
+                bands_type_new[hodel_link[0][1][0]+"-"+hodel_link[1][1][0]]=hodel_link[0][2][1] #取代占位符
+                print("replace",hodel_link[0][1][0]+"-"+hodel_link[1][1][0]," ",hodel_link[0][2])
+                hodels_link.append(hodel_link)
+                replace_index_atoms.append([str(all_atoms_num),str(key)])  #键大于原子总数，值：占位符位置
+                all_atoms_num-=1
+            
+        #去除冗余占位信息
+        print(atoms_type_new)
+        print("bands_type_new",bands_type_new)
+        print(replace_index_atoms)
+        
+        #从新排序
+        
+        atoms_key  = list(atoms_type_new.keys())
+        for key in atoms_key :
+            if int(key)>all_atoms_num:
+                print(all_atoms_num,str(key),dict(replace_index_atoms),dict(replace_index_atoms))
+                atoms_type_new[ dict(replace_index_atoms)[str(key) ] ] = atoms_type_new[str(key) ]
+                del atoms_type_new[str(key) ]
+        print("--")
+        print("atoms_type_new",atoms_type_new)
+        print("--")
+        
+        bands_key  = list(bands_type_new.keys())
+        for key in bands_key:
+            for be_replace in dict(replace_index_atoms).keys():
+                if be_replace in key:
+                    value = bands_type_new[key]
+                    del bands_type_new[key]
+                    key= key.replace(be_replace,dict(replace_index_atoms)[be_replace])
+                    bands_type_new[key] = value
+                    
+                    
+            
+        
+        print(bands_type_new)
+                
 
-    
 
-        place_holder_list  = []
 
+            
+
+            
         
 
-        is_replaced_node = []
 
         
+      
+        print("去除冗余占位信息")#去除冗余占位信息
+        
 
-        for key,item in atoms_type.items():  #发现占位符
-
-            
-
-            if "h1" in item or "h2" in item or"h3" in item or"h4" in item :
-
-                
-
-                is_replaced_node.append(key)
-
-                place_holder_list.append([key,item])
-
-                atoms_type_new.pop(key)
-
-                #print("key ",key)
-
-                
-
-            
 
     
 
-    
-
-        for holder in place_holder_list:  #寻找被取代的键
-
-            new_band = []
-
-            band_type = ""
-
-            for key,item in bands_type.items():
-
-            
-
-                
-
-                if holder[0] in key.split("-"):
-
-    
-
-                    #print(key.split("-"),item)
-
-                    try:
-
-                        bands_type_new.pop(key)
-
-                    except KeyError:
-
-                        print("KeyError")
-
-                        return "KeyError"
-
-                    new_band.append(key.split("-")[0])
-
-                    if item=="11":
-
-                        band_type = "1"
-
-                    if item=="12":
-
-                        band_type = "2"
-
-                    if item=="13":
-
-                        band_type = "3"
-
-                    if item=="14":
-
-                        band_type = "4"
-
-    
-
-                
-
-                        
-
-            
-
-            #print(new_band,band_type)
-
-            bands_type_new["-".join(new_band)]=band_type
-
-            
-
-    
-
-        #print("is_replaced_node-",is_replaced_node)
-
-        #print('all_atoms',len(atoms_type_new))
-
-    
-
-        is_replaced_node_s = []
-
-        for i in is_replaced_node:
-
-            if int(i)<=len(atoms_type_new):#没必要用大于原子数的数值替换
-
-                is_replaced_node_s.append(i)
-
-                
-
-    
-
-        #解决序数大于总原子数    
-
-        replace_count = 0
-
-        #print("atoms_type_new",atoms_type_new)    
-
-        replaced_node = {} #值来替换键
-
-        for key,item in atoms_type_new.items():  
-
-            if int(key)>len(atoms_type_new):
-
-                
-
-                #print("bigger ",key)
-
-                
-
-                    
-
-                #print(key ,"replace ",is_replaced_node_s[replace_count] )
-
-                atoms_type_new[ is_replaced_node_s[replace_count]  ]=item
-
-                        
-
-                replaced_node[key]= is_replaced_node_s[replace_count]#为下一步band的修改做准备
-
-                atoms_type_new.pop(key)#删除大于原子数的键
-
-                
-
-                replace_count+=1
-
-                        
-
-                
-
-        #print("atoms_type_new",atoms_type_new)
-
-        #print("replaced_node",replaced_node)
-
-        for r_key,r_item in replaced_node.items():
-
-            
-
-            for key,item in bands_type_new.items():
-
-                nodes = key.split("-")
-
-                if r_key in nodes:
-
-                    
-
-                    if r_key == nodes[0]:
-
-                        #print("0node_r ",r_key)
-
-                        bands_type_new.pop(key)
-
-                        bands_type_new[ replaced_node[r_key]+"-"+nodes[1]]=item
-
-                        
-
-                    
-
-                    elif r_key == nodes[1]:
-
-                        #print("1node_r ",r_key)
-
-                        bands_type_new.pop(key)
-
-                        bands_type_new[ replaced_node[r_key]+"-"+nodes[0]]=item
-
-                        
-
-    
-
-    
-
-        #print(bands_type_new)
+        #print(bands_type_new)################################################################################
 
     
 
@@ -3434,7 +3271,7 @@ class MolTools():
 
             
 
-        for i in  mol_info_2:
+        for i in  mol_info_2: #a，b为连接两端的原子序号
 
             #print(i[0][0],i[0][1],i[1])
 
@@ -3469,12 +3306,7 @@ class MolTools():
     
 
     
-
-    
-
-    
-
-                
+              
 
             lines.append(a+b+"  "+i[1]+"  0\n")
 
@@ -3483,10 +3315,6 @@ class MolTools():
         lines.append("M  END\n")
 
     
-
-    
-
-
 
         with open(mol_name+"_fake.mol","w") as mol_txt:
 
@@ -3718,30 +3546,23 @@ if __name__=="__main__":
 
     dir_save_name="nets_info_dir_NPname_3000.plk"
 
-    folder = "mol_zinc_150000/"
+    folder = "mols/"
 
-    files_list = os.listdir(folder)
+    #files_list = os.listdir(folder)
 
-    files_list.sort(key=lambda x:int(x[:-4]))
+    #files_list.sort(key=lambda x:int(x[:-4]))
 
-    files_list = [folder+x for x in files_list if ".mol" in x][:20]
+    #files_list = [folder+x for x in files_list if ".mol" in x][:20]
 
-    moltools.mol_to_nets_dir(files_list,dir_save_name,key_is_order=False)
+    #moltools.mol_to_nets_dir(files_list,dir_save_name,key_is_order=False)
 
-    moltools.write_txt("ZINC250K.txt",files_list,"nets_info_dir_NPname_3000.plk")
+    #moltools.write_txt("ZINC250K.txt",files_list,"nets_info_dir_NPname_3000.plk")
 
-    moltools.net_dir2order_dir(nets_dir_name,order_dir_name)   
-
-
-
-
-
-    input("print")
-
+    #moltools.net_dir2order_dir(nets_dir_name,order_dir_name)   
 
 
     #encode
-    folder = "mol_zinc_150000/"
+    folder = "mols/"
 
     files_list = os.listdir(folder)
 
@@ -3751,7 +3572,7 @@ if __name__=="__main__":
 
     moltools = MolTools()
 
-    for file_name in files_list:
+    for file_name in [x  for x in files_list if "25" in x]:
 
         Net  = MolNets(folder+file_name)
 
@@ -3804,73 +3625,3 @@ if __name__=="__main__":
 
 
 
-
-
-
-
-
-#net_dir2order_dir(nets_dir_name,order_dir_name)
-
-######################################################################################################
-
-#    print("Finish")
-
-#    with  open(dir_save_name,"rb") as f:
-
-#        s =pickle.load(f)
-
-    
-
-#    count = 0 
-
-#    for i ,j in s.items(): 
-
-#        count +=1
-
-        #print(i,j[1],j[2])
-
-#        if j[1]<20:
-
-#            print(j[1],j[2])
-
-	    #break
-
-#        if count >20:
-
-#            break
-
-#nets_dir(to_files_name,"nets_info_dir.plk",key_is_order=False)
-
-#nets_dir(to_files_name,"nets_info_dir_NPname.plk",key_is_order=True)
-
-
-
-#to_files_name="self.net2matrix+0/"
-
-#file_dir = os.listdir(to_files_name)
-
-#for count , file in enumerate(file_dir):
-
-    
-
-#    mol = np.load(to_files_name+file)
-
-#    with  open("nets_info_dir_NPname_1.plk","rb") as f:
-
-#        s =pickle.load(f)
-
-#    for i in mol :
-
-#        if s[str(i)][1] >8282:
-
-#            print(s[str(i)][1],end="#")
-
-#        else:
-
-#            print(s[str(i)][1],end=" ")
-
-#    print()
-
-#    if count>100:
-
-#        break
