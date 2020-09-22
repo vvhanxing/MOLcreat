@@ -37,7 +37,8 @@ def converter(file_name,save_name):
 
         m = Chem.MolFromSmiles(smi)
 
-        print("->",Chem.QED.properties(m),Chem.QED.qed(m), round(Descriptors.MolLogP(mol), 2))
+        print(file_name,end = "  ")
+        print("->",Chem.QED.qed(m),round(Descriptors.MolLogP(mol), 2)) #Chem.QED.properties(m)
 
         Draw.MolToImageFile(m,save_name+".png",size=(300, 300))
 
@@ -45,10 +46,15 @@ def converter(file_name,save_name):
 
         AllChem.EmbedMolecule( m,randomSeed=3 )
 
-        AllChem.MMFFOptimizeMolecule(m)
+        try :
+            AllChem.MMFFOptimizeMolecule(m)
 
-        Chem.MolToMolFile(m,file_name+".mol")
-        #print(file_name[:-9])
+            Chem.MolToMolFile(m,file_name+".mol")
+            
+        except ValueError:
+            
+            print("Rdkit not opt mol")
+            
 
     out_file.close()
 
