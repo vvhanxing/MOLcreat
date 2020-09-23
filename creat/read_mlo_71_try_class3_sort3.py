@@ -2686,11 +2686,15 @@ class MolTools():
 
      
 
-            
+            try :
 
-            l1= list(set(list(zip(*net))[0]))
+                l1= list(set(list(zip(*net))[0]))  #-> IndexError: list index out of range
 
-            l2= list(set(list(zip(*net))[1]))
+                l2= list(set(list(zip(*net))[1]))
+                
+            except IndexError:
+                
+                return  "IndexError","IndexError","IndexError"
 
             l1.sort(key = lambda x:x[0])
 
@@ -3038,8 +3042,14 @@ class MolTools():
             m=self.txt2matrix(i,order_dir)
 
             layer=[]
-
-            for j in self.matrix2layer(m.reshape((1, 15, 15, 3)))[1][1]:
+            LAYERs = self.matrix2layer(m.reshape((1, 15, 15, 3)))[1]
+            if "IndexError" not in LAYERs:
+                
+                LAYERs_1 = LAYERs[1]
+            else:
+                return "IndexError","IndexError","IndexError","IndexError"
+            
+            for j in LAYERs_1:
 
     
 
@@ -3093,11 +3103,11 @@ class MolTools():
 
             #print(m_)
 
-            layer_bannd_type_dir =self.matrix2layer(m.reshape((1, 15, 15, 3)))[2]
+            NETs,_,layer_bannd_type_dir =self.matrix2layer(m.reshape((1, 15, 15, 3)))
 
      
 
-            for n_, j in enumerate(self.matrix2layer(m.reshape((1, 15, 15, 3)))[0]):
+            for n_, j in enumerate(NETs):
 
                 #print(j)
 
@@ -3117,9 +3127,9 @@ class MolTools():
 
                     except IndexError:
 
-                        print("next mol")
+                        #print("next mol")
 
-                        print("IndexError")
+
 
                         return  "IndexError","IndexError","IndexError","IndexError"
 
@@ -3191,7 +3201,10 @@ class MolTools():
                         hodel_link.append([key,h_a,bands_type_new[link]]) #占位点，与谁相连，代替什么键
                         #print("",bands_type_new[link],link )
                         del bands_type_new[link] #取代占位符
-                bands_type_new[hodel_link[0][1][0]+"-"+hodel_link[1][1][0]]=hodel_link[0][2][1] #取代占位符
+                try:
+                    bands_type_new[hodel_link[0][1][0]+"-"+hodel_link[1][1][0]]=hodel_link[0][2][1] #取代占位符 -> IndexError: list index out of range
+                except IndexError:
+                    return "Error"
                 #print("replace",hodel_link[0][1][0]+"-"+hodel_link[1][1][0]," ",hodel_link[0][2])
                 hodels_link.append(hodel_link)
                 replace_index_atoms.append([str(all_atoms_num),str(key)])  #键大于原子总数，值：占位符位置
@@ -3311,9 +3324,9 @@ class MolTools():
 
     
 
-        with open(mol_name+"_fake.mol","w") as mol_txt:
+        #with open(mol_name+"_fake.mol","w") as mol_txt:
 
-            mol_txt.writelines(lines)
+            #mol_txt.writelines(lines)
 
     
 
@@ -3362,13 +3375,13 @@ if __name__=="__main__":
 
     order_dir_name = "order_info_dir_NPname_3000_.plk"
 
-    folder = "mol_zinc_150000/"
+    #folder = "mol_zinc_150000/"
 
-    files_list = os.listdir(folder)
+    #files_list = os.listdir(folder)
 
-    files_list.sort(key=lambda x:int(x[:-4]))
+    #files_list.sort(key=lambda x:int(x[:-4]))
 
-    files_list = [folder+x for x in files_list if ".mol" in x][90817:]
+    #files_list = [folder+x for x in files_list if ".mol" in x][90817:]
 
     #moltools.mol_to_nets_dir(files_list,nets_dir_name,key_is_order=False)
 
@@ -3386,10 +3399,30 @@ if __name__=="__main__":
 
 
     #编码到分子
+
+    moltools = MolTools()
+
+    with open(order_dir_name,"rb") as f:
+
+        order_dir = pickle.load(f)
+        
+    file_name = "1.mol"
+
+    mol_str = "2 122 10 4 47 81 183 816 349 4 3 13 15"
+    #mol_str = "2 1 37 10 4 47 81 183 835 137 1256 1311 13 15"
+    mol_str ="2 1 11 672 2586 171 12 5 40 6 30 32 5 138 10 18 7 19 16 123 39 27 219 616 180"
+    mol_str ="2 4 82 172 16 8 9 1 20 12 5 148 43 114 308 33 1064 608 1257 12 1 18 7 19 15"
+
+    moltools.write_fake_mol(file_name,mol_str,order_dir)
+
+    moltools.str2nets(mol_str,order_dir,True)
+    print("finish")
+    
     
 
 
-
+    input()
+    input()
 
 
 
