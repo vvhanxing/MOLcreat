@@ -15,6 +15,9 @@ https://docs.dgl.ai/tutorials/models/1_gnn/9_gat.html
 斯坦福教授ICLR演讲：图网络最新进展GraphRNN和GCPN（附PPT下载）
 https://baijiahao.baidu.com/s?id=1635036452161379749&wfr=spider&for=pc
 
+Nat. Mach. Intell. | 利用条件循环神经网络生成特定性质分子
+https://blog.csdn.net/u012325865/article/details/106309160/?utm_medium=distribute.pc_relevant.none-task-blog-title-1&spm=1001.2101.3001.4242
+
 MoFlow:AnInvertibleFlowModelforGenerating MolecularGraphs 
 https://arxiv.org/pdf/2006.10137.pdf
 
