@@ -3221,7 +3221,7 @@ class MolTools():
         for key in atoms_key :
             if int(key)>all_atoms_num:
                 #print(all_atoms_num,str(key),dict(replace_index_atoms),dict(replace_index_atoms))
-                atoms_type_new[ dict(replace_index_atoms)[str(key) ] ] = atoms_type_new[str(key) ]
+                atoms_type_new[ OrderedDict(replace_index_atoms)[str(key) ] ] = atoms_type_new[str(key) ]
                 del atoms_type_new[str(key) ]
         #print("--")
         #print("atoms_type_new",atoms_type_new)
@@ -3229,11 +3229,11 @@ class MolTools():
         
         bands_key  = list(bands_type_new.keys())
         for key in bands_key:
-            for be_replace in dict(replace_index_atoms).keys():
+            for be_replace in OrderedDict(replace_index_atoms).keys():
                 if be_replace in key:
                     value = bands_type_new[key]
                     del bands_type_new[key]
-                    key= key.replace(be_replace,dict(replace_index_atoms)[be_replace])
+                    key= key.replace(be_replace,OrderedDict(replace_index_atoms)[be_replace])
                     bands_type_new[key] = value
                     
                     
