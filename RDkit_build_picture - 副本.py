@@ -1,13 +1,16 @@
-
 #!usr/bin/python3
 
 # python sdftosmiles.py molecules.sdf
 
 #conda activate my-rdkit-env
 import pandas as pd
+
 import matplotlib.pyplot as plt
+
 from collections import OrderedDict
+
 import numpy  as np
+
 import os
 
 import sys
@@ -27,11 +30,9 @@ import umap
 
 
 
-def U_map(data):
+def U_map(mols,color):
     
 
-
-    
     #fig, ax_array = plt.subplots(20, 20)
     #axes = ax_array.flatten()
     #for i, ax in enumerate(axes):
@@ -40,27 +41,20 @@ def U_map(data):
     #plt.tight_layout(h_pad=0.5, w_pad=0.01)
     #plt.show()
 
-
     
+    fingerprint=np.array(list(map(lambda x: AllChem.GetMorganFingerprintAsBitVect(x, 2, 2048), mols)))
+
+    print(fingerprint.shape)
     reducer = umap.UMAP(random_state=42)
-    embedding = reducer.fit_transform(data)
+    embedding = reducer.fit_transform(fingerprint)
     #print(digits.data.shape)
     print(embedding.shape)
 
-    plt.scatter(embedding[:, 0], embedding[:, 1], c=np.ones(embedding.shape[0]), cmap='Spectral', s=5)
+    plt.scatter(embedding[:, 0], embedding[:, 1], c=color, cmap='Spectral', s=5)
     plt.gca().set_aspect('equal', 'datalim')
     plt.colorbar(boundaries=np.arange(11)-0.5).set_ticks(np.arange(10))
     plt.title('UMAP projection of the Digits dataset')
     plt.show()
-
-
-
-
-
-
-
-
-
 
 
 
@@ -100,7 +94,7 @@ def converter(file_name,save_name):
         AllChem.EmbedMolecule( m,randomSeed=3 )
 
         try :
-            AllChem.MMFFOptimizeMolecule(m)
+            #AllChem.MMFFOptimizeMolecule(m)
 
             #Chem.MolToMolFile(m,file_name+".mol")
 
@@ -135,7 +129,7 @@ if __name__=="__main__":
     
 
             
-    for file_name in folder[:20]:
+    for file_name in folder[:100]:
         print(file_name)
 
                           
@@ -155,14 +149,13 @@ if __name__=="__main__":
 
 
 
-
-    dir_order ["Smi"] = smi_list
+    
 
     mols=list(map(lambda x: Chem.MolFromSmiles(x), smi_list))
-    fingerprint=np.array(list(map(lambda x: AllChem.GetMorganFingerprintAsBitVect(x, 2, 2048), mols)))
-    print(fingerprint.shape)
-    U_map(fingerprint)
-    input()
+    
+    U_map(mols,m_qed_list )
+
+    dir_order ["Smi"] = smi_list
     
     dir_order ["LogP"]=m_LogP_list
     
@@ -173,6 +166,3 @@ if __name__=="__main__":
         
     dataframe = pd.DataFrame(dir_order)
     dataframe.to_csv("creatMol.csv")
-
-
-    
