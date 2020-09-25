@@ -322,10 +322,10 @@ if __name__=="__main__":
 
     smi_train_list = list(csv_data["smiles"])
 
-    smi_train_list  = [ smi[:-1] for smi in smi_train_list if "+" not in smi and "-" not in smi][:50000]
+    smi_train_list  = [ smi[:-1] for smi in smi_train_list if "+" not in smi and "-" not in smi][:2000]
     
 
-    color_train = [0 for x in  smi_train_list][:100]
+    color_train = [0 for x in  smi_train_list][:2000]
 
 
 
@@ -337,7 +337,7 @@ if __name__=="__main__":
 
     
     
-    d#ir_order  = build_creat_csv()
+    #dir_order  = build_creat_csv()
 
     #smi_list = dir_order ["smi"]
 
@@ -349,9 +349,9 @@ if __name__=="__main__":
 
     csv_data = pd.read_csv("creatMol.csv")
 
-    smi_list = list(csv_data["smi"])[:10000]  
+    smi_list = list(csv_data["smi"])[:2000]  
 
-    color = [1 for x in smi_list][:10000]
+    color = [1 for x in smi_list][:2000]
 
 
 
