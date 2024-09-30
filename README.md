@@ -69,3 +69,125 @@ print(Chem.MolToSmiles(molecule.GetMol()))
 ```
 
 
+
+Voltage ( V )@10m
+
+分子量
+公共层A1
+ P - Dopant 
+器件参数B1
+ A /cm2
+材料参数
+C1
+ Voltage ( V )@0.1
+ HOMO 
+ nit 
+公共层
+A2
+ HTL 
+器件参数
+B2
+材料参数
+C2
+ Luminance ( cd / m *2)@10mA/cm2
+ LUMO 
+材料参数
+C3
+公共层
+A3
+ HBL 
+器件参数
+B3
+ CIE x @10mA/ cm 
+S1
+材料参数
+C4
+公共层
+A4
+ ETL 
+器件参数
+B4
+A2
+ CIEv @10mA/ cm 
+S2
+公共层
+A5
+ ElL 
+器件参数
+B5
+材料参数
+C5
+ Peak @10mA/ cm ^
+T1
+公共层
+A6
+阴极
+器件参数
+B6
+材料参数
+C6
+ FWHM @10mA/ c 
+T2
+公共层
+A7
+ CPL 
+器件参数
+B7
+m2
+材料参数
+C7
+ Current 
+ Density ( mA / cm 
+As1-T1
+2)@10mA/cm2
+材料参数
+C8
+ RED 
+A8
+ RP 
+器件参数B8
+ Cruuent 
+ Efficiency ( cd /
+偶极矩
+ A )@10mA/cm2
+材料参数
+C9
+ RED 
+A9
+ SRH 
+器件参数B9
+ Power 
+ Efficiency (1m/
+空穴迁移率
+ w )@10mA/ cm "2
+材料参数
+C10
+ RED 
+A10
+ PRH 
+器件参数
+B10
+ Radiance ( W / sx /
+电子迁移率
+ m *2)@10mA/ cm ^2
+材料参数
+C11
+ RED 
+A11
+ NRH 
+器件参数
+B11
+ EQE (%)@10mA/ cm 
+空穴重组能
+ RED 
+A12
+ RD 
+器件参数
+B12
+2
+材料参数
+C12
+
+
+
+
